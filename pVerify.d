@@ -8,7 +8,8 @@ Beep boop my proofs are symbol hell.
 
 Reference proof:
 
-wffDN[[x @ 1]] |- [[~~x
+wffDN:
+[[x @ 1]] |- [[~~x
 : wffNot [[~x
 : wffNot [[x : 1]]
 ]]
@@ -32,7 +33,8 @@ Implies(Implies(Not(x), Not(y)), Implies(y, x)) ++/
 
 class Proof {
 	private string representation;
-	/++ In the above example, this would be: [[ ~~x v wffDN[[x]] ]] ++/
+	/++ In the above example, this would be: [[ ~~x v wffDN[[x]] ]] 
+	the internal representation when using a proof ++/
 	
 	private ProofType proofType;
 	/++ In the above example, this would be ProofType.WFF ++/
