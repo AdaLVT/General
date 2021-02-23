@@ -18,8 +18,8 @@ wffDN:
 
 alias Justification = Algebraic!(void, Proof);
 
-/++ an alias for possible justifications, 
-or a proof step in itself (Proof) [with reference
+/++ an alias for possible justifications:
+Either a proof step in itself (Proof) [with reference
 numbers being added by the verifier]
 or void for an assertion without proof ++/
 
