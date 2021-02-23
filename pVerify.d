@@ -3,9 +3,7 @@
 import std.variant;
 
 /++
-Plans for a theorem verifier written in D, which outputs me-readable notation
-Beep boop my proofs are symbol hell.
-
+Plans for a theorem verifier written in D, which outputs "me-readable" notation.
 Reference proof:
 
 wffDN:
