@@ -56,9 +56,9 @@ abstract class Expression: Exp {
 /+ And abstract class that the individual expression types inherit from +/
 
 class Atomic: Expression {
-	bool isAtomic() { return true; }
-	bool isNegation() { return false;}
-	bool isImplication() { return false; }
+	public bool isAtomic() { return true; }
+	public bool isNegation() { return false;}
+	public bool isImplication() { return false; }
 	this(string rep) {
 		this.representation = rep;
 		this.arguments = [];
@@ -71,9 +71,9 @@ Atomic atom(string arg) {
 /+ The class that is stuff like "x" "phi" "\varnothing" etc. +/
 
 class Negation: Expression {
-	bool isAtomic() { return false; }
-	bool isNegation() { return true;}
-	bool isImplication() { return false; }
+	public bool isAtomic() { return false; }
+	public bool isNegation() { return true;}
+	public bool isImplication() { return false; }
 	this(Expression arg) {
 		if(arg.isAtomic || arg.isNegation)
 			this.representation = "\\lnot" ~ arg.representation;
@@ -88,9 +88,9 @@ Negation not(Expression arg) {
 /+ Logical negation +/
 
 class Implication: Expression {
-	bool isAtomic() { return false; }
-	bool isNegation() { return false;}
-	bool isImplication() { return true; }
+	public bool isAtomic() { return false; }
+	public bool isNegation() { return false;}
+	public bool isImplication() { return true; }
 	this(Expression lhs, Expression rhs) {
 		string lhsP, rhsP;
 		if(lhs.isAtomic || lhs.isNegation)
@@ -183,11 +183,11 @@ class Proof {
 				res ~=  j.getRepresentation();
 			}
 		}
-		if(this.proofType == ProofType.WFF) {
+		if(this.isWFF()) {
 			return "\\lBrack " ~ res ~ " \\rBrack";
-		} else if(this.proofType == proofType.Assumption) {
+		} else if(this.isAssumption()) {
 			return "\\lParen " ~ res ~ " \\rParen";
-		} else if(this.proofType == proofType.Set) {
+		} else if(this.isSet()) {
 			return "\\lBrace " ~ res ~ " \\rBrace";
 		} else {
 			return "\\lAngle " ~ res ~ " \\rAngle";
@@ -200,17 +200,30 @@ Proof wffFalse() {
 }
 
 Proof wffNot(Proof x) {
-	assert(x.proofType == ProofType.WFF, "Error: Argument to wffNot not a WFF!");
+	assert(x.isWFF(), "Error: Argument to wffNot not a WFF!");
 	return new Proof("wffNot", ProofType.WFF, not(x.getExpression()), [x]);
 }
 
 Proof wffImplies(Proof x, Proof y) {
-	assert(x.proofType == ProofType.WFF, "Error: Left argument to wffImplies not a WFF!");
-	assert(y.proofType == ProofType.WFF, "Error: Right argument to wffImplies not a WFF!");
+	assert(x.isWFF(), "Error: Left argument to wffImplies not a WFF!");
+	assert(y.isWFF(), "Error: Right argument to wffImplies not a WFF!");
 	return new Proof("wffImplies", ProofType.WFF, implies(x.getExpression(), y.getExpression()), [x, y]);
 }
 
+Proof axMp(Proof wffPhi, Proof assPhi, Proof wffPsi, Proof assImp) {
+	assert(wffPhi.isWFF(), "Error: major validity argument to axMp not a WFF!");
+	assert(assPhi.isAssumption(), "Error: major assumption argument to axMp not an assumption!");
+	assert(wffPhi.getExpression().getRepresentation() == assPhi.getExpression().getRepresentation(), "Error: major validity and assumption mismatch in axMp!");
+	assert(wffPsi.isWFF(), "Error: minor validity argument to axMp not a WFF!");
+	assert(assImp.isAssumption(), "Error: minor assumption argument to axMp not an assumption!");
+	assert(assImp.getExpression().getRepresentation() == wffPhi.getExpression().implies(wffPsi.getExpression()).getRepresentation(), "Error: minor assumption and implication of phi => psi mismatch in axMp!");
+	return new Proof("axMp", ProofType.Assumption, wffPhi.getExpression().implies(wffPsi.getExpression()), [wffPhi, assPhi, wffPsi, assImp]);
+}	
+a
 void main() {
-	auto z = wffFalse();
-	writeln(z.wffImplies(z).getRepresentation());
+	auto f = wffFalse();
+	auto g = new Proof("testAss", ProofType.Assumption, f.getExpression());
+	auto h = new Proof("testImp", ProofType.Assumption, f.getExpression().implies(f.getExpression()));
+	auto p = axMp(f, g, f, h);
+	writeln(p.getRepresentation());
 }
