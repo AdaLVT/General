@@ -200,12 +200,13 @@ Proof wffFalse() {
 }
 
 Proof wffNot(Proof x) {
-	assert(x.proofType == ProofType.WFF);
+	assert(x.proofType == ProofType.WFF, "Error: Argument to wffNot not a WFF!");
 	return new Proof("wffNot", ProofType.WFF, not(x.getExpression()), [x]);
 }
 
 Proof wffImplies(Proof x, Proof y) {
-	assert(x.proofType == ProofType.WFF);
+	assert(x.proofType == ProofType.WFF, "Error: Left argument to wffImplies not a WFF!");
+	assert(y.proofType == ProofType.WFF, "Error: Right argument to wffImplies not a WFF!");
 	return new Proof("wffImplies", ProofType.WFF, implies(x.getExpression(), y.getExpression()), [x, y]);
 }
 
