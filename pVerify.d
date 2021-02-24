@@ -120,7 +120,11 @@ with `.representation` being the human-readable form ++/
 class Proof {
 	/++ In the above example, this would be: wffDN 
 	the internal representation when using a proof ++/
-	
+	private string name;
+	public string getName() {
+		return this.name;
+	}	
+
 	private ProofType proofType;
 	public bool isWFF() {
 		return this.proofType == ProofType.WFF;
@@ -155,13 +159,15 @@ class Proof {
 	this would be `wffNot(wffNot(x))`,
 	with a type signature of Proof wffNot(Proof x)++/
 
-	this(ProofType proofType, Expression expression) {
+	this(string name, ProofType proofType, Expression expression) {
+		this.name = name;
 		this.proofType = proofType;
 		this.expression = expression;
 	}
 	/+ For statements without proof: axioms +/
 
-	this(ProofType proofType, Expression expression, Proof justification) {
+	this(string name, ProofType proofType, Expression expression, Proof justification) {
+		this.name = name;
 		this.proofType = proofType;
 		this.expression = expression;
 		this.justification = justification;
@@ -172,7 +178,7 @@ class Proof {
 		if(this.justification.peek!(void) !is null) {
 			assert(true);
 		} else {
-			temp ~= " \\\n\\because " ~ (*this.justification.peek!(Proof)).getRepresentation();
+			temp ~= " \\\n\\because " ~ this.getName() ~ (*this.justification.peek!(Proof)).getRepresentation();
 		}
 		if(this.proofType == ProofType.WFF) {
 			return "\\lBrack " ~ temp ~ " \\rBrack";
@@ -187,12 +193,17 @@ class Proof {
 }
 
 Proof wffFalse() {
-	return new Proof(ProofType.WFF, atom("0"));
+	return new Proof("wffFalse", ProofType.WFF, atom("0"));
+}
+
+Proof wffNot(Proof x) {
+	assert(x.proofType == ProofType.WFF);
+	return new Proof("wffNot", ProofType.WFF, not(x.getExpression()), x);
 }
 	
 void main() {
-	auto x = new Atomic("x");
-	auto y = new Atomic("y");
-	auto z = new Implication(x, new Implication(y, x));
+	auto z = wffFalse();
 	writeln(z.getRepresentation());
+	writeln("----LINE----");
+	writeln(z.wffNot().wffNot().getRepresentation());
 }
