@@ -17,7 +17,7 @@ wffDN:
 
 ++/
 
-alias Justification = Algebraic!(void, Proof);
+alias Justification = Algebraic!(void, Proof[]);
 
 /++ an alias for possible justifications:
 Either a proof step in itself (Proof) [with reference
@@ -151,8 +151,8 @@ class Proof {
 	public bool isAxiom() {
 		return this.justification.peek!(void) !is null;
 	}
-	public Proof getProof() {
-		return *this.justification.peek!Proof;
+	public Proof[] getProof() {
+		return *this.justification.peek!(Proof[]);
 	}
 	
 	/++ The justification for the step, so
@@ -166,7 +166,7 @@ class Proof {
 	}
 	/+ For statements without proof: axioms +/
 
-	this(string name, ProofType proofType, Expression expression, Proof justification) {
+	this(string name, ProofType proofType, Expression expression, Proof[] justification) {
 		this.name = name;
 		this.proofType = proofType;
 		this.expression = expression;
@@ -174,20 +174,23 @@ class Proof {
 	}
 
 	public string getRepresentation() {
-		string temp = this.expression.getRepresentation();
-		if(this.justification.peek!(void) !is null) {
+		string res = this.expression.getRepresentation();
+		if(this.justification.peek!(void) !is null) { //TODO: make axiom be []. 
 			assert(true);
 		} else {
-			temp ~= " \\\\\n\\because " ~ this.getName() ~ (*this.justification.peek!(Proof)).getRepresentation();
+			res ~= " \\\\\n\\because " ~ this.getName();
+			foreach(j; *this.justification.peek!(Proof[])) {
+				res ~=  j.getRepresentation();
+			}
 		}
 		if(this.proofType == ProofType.WFF) {
-			return "\\lBrack " ~ temp ~ " \\rBrack";
+			return "\\lBrack " ~ res ~ " \\rBrack";
 		} else if(this.proofType == proofType.Assumption) {
-			return "\\lParen " ~ temp ~ " \\rParen";
+			return "\\lParen " ~ res ~ " \\rParen";
 		} else if(this.proofType == proofType.Set) {
-			return "\\lBrace " ~ temp ~ " \\rBrace";
+			return "\\lBrace " ~ res ~ " \\rBrace";
 		} else {
-			return "\\lAngle " ~ temp ~ " \\rAngle";
+			return "\\lAngle " ~ res ~ " \\rAngle";
 		}
 	}
 }
@@ -198,12 +201,15 @@ Proof wffFalse() {
 
 Proof wffNot(Proof x) {
 	assert(x.proofType == ProofType.WFF);
-	return new Proof("wffNot", ProofType.WFF, not(x.getExpression()), x);
+	return new Proof("wffNot", ProofType.WFF, not(x.getExpression()), [x]);
 }
-	
+
+Proof wffImplies(Proof x, Proof y) {
+	assert(x.proofType == ProofType.WFF);
+	return new Proof("wffImplies", ProofType.WFF, implies(x.getExpression(), y.getExpression()), [x, y]);
+}
+
 void main() {
 	auto z = wffFalse();
-	writeln(z.getRepresentation());
-	writeln("----LINE----");
-	writeln(z.wffNot().wffNot().getRepresentation());
+	writeln(z.wffImplies(z).getRepresentation());
 }
