@@ -178,7 +178,7 @@ class Proof {
 		if(this.justification.peek!(void) !is null) {
 			assert(true);
 		} else {
-			temp ~= " \\\n\\because " ~ this.getName() ~ (*this.justification.peek!(Proof)).getRepresentation();
+			temp ~= " \\\\\n\\because " ~ this.getName() ~ (*this.justification.peek!(Proof)).getRepresentation();
 		}
 		if(this.proofType == ProofType.WFF) {
 			return "\\lBrack " ~ temp ~ " \\rBrack";
